@@ -4,12 +4,12 @@
   "private": true,
   "description": "TravelBuddy — AI-Powered Tourism Recommendation & Travel Planning Web Application",
   "scripts": {
-    "dev": "concurrently -n \"BACKEND,FRONTEND\" -c \"cyan,green\" \"python backend/run.py\" \"npm --prefix frontend run dev\"",
-    "start": "concurrently -n \"BACKEND,FRONTEND\" -c \"cyan,green\" \"python backend/run.py\" \"npm --prefix frontend run dev\"",
+    "dev": "concurrently -n \"BACKEND,FRONTEND\" -c \"cyan,green\" \"node scripts/run-python.js backend/run.py\" \"npm --prefix frontend run dev\"",
+    "start": "concurrently -n \"BACKEND,FRONTEND\" -c \"cyan,green\" \"node scripts/run-python.js backend/run.py\" \"npm --prefix frontend run dev\"",
     "frontend": "npm --prefix frontend run dev",
-    "backend": "python backend/run.py",
-    "seed": "python backend/seed_database.py",
-    "test": "python -m unittest discover backend/tests",
+    "backend": "node scripts/run-python.js backend/run.py",
+    "seed": "node scripts/run-python.js backend/seed_database.py",
+    "test": "node scripts/run-python.js -m unittest discover backend/tests",
     "build": "npm --prefix frontend run build",
     "preview": "npm --prefix frontend run preview",
     "install:frontend": "npm --prefix frontend install"

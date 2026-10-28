@@ -83,7 +83,7 @@ def seed_database():
             added_count = 0
             for _, row in df.iterrows():
                 dest_id = int(row['id'])
-                if Destination.query.get(dest_id):
+                if db.session.get(Destination, dest_id):
                     continue
 
                 name = clean_val(row['destination_name'])

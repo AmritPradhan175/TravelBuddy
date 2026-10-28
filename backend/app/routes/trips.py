@@ -18,7 +18,7 @@ def generate_itinerary_preview():
 
     destination = None
     if dest_id:
-        destination = Destination.query.get(dest_id)
+        destination = db.session.get(Destination, dest_id)
     elif dest_name:
         destination = Destination.query.filter(Destination.destination_name.ilike(f"%{dest_name}%")).first()
 

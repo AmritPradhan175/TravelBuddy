@@ -36,7 +36,7 @@ export class APIClient {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error?.message || `Request failed with status ${response.status}`);
+      throw new Error(errorData.error?.message || errorData.message || `Request failed with status ${response.status}`);
     }
 
     const data = await response.json();
@@ -52,7 +52,7 @@ export class APIClient {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error?.message || `Request failed with status ${response.status}`);
+      throw new Error(errorData.error?.message || errorData.message || `Request failed with status ${response.status}`);
     }
 
     const data = await response.json();
@@ -68,7 +68,7 @@ export class APIClient {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error?.message || `Request failed with status ${response.status}`);
+      throw new Error(errorData.error?.message || errorData.message || `Request failed with status ${response.status}`);
     }
 
     const data = await response.json();
@@ -83,7 +83,7 @@ export class APIClient {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error?.message || `Request failed with status ${response.status}`);
+      throw new Error(errorData.error?.message || errorData.message || `Request failed with status ${response.status}`);
     }
 
     const data = await response.json().catch(() => ({}));

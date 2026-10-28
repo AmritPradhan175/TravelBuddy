@@ -192,5 +192,38 @@ class TravelBuddyAPITestCase(unittest.TestCase):
         del_fav_res = self.client.delete('/api/v1/favorites/2', headers=headers)
         self.assertEqual(del_fav_res.status_code, 200)
 
+        # 7. Test Search History (GET, POST, DELETE)
+        hist_post_res = self.client.post(
+            '/api/v1/history/search',
+            headers=headers,
+            data=json.dumps({'query': 'Manali snowfall'}),
+            content_type='application/json'
+        )
+        self.assertEqual(hist_post_res.status_code, 201)
+
+        hist_get_res = self.client.get('/api/v1/history/search', headers=headers)
+        self.assertEqual(hist_get_res.status_code, 200)
+        hist_data = json.loads(hist_get_res.data)
+        self.assertIn('history', hist_data['data'])
+
+        hist_del_res = self.client.delete('/api/v1/history/search', headers=headers)
+        self.assertEqual(hist_del_res.status_code, 200)
+
+        # 8. Test Destination Views History (POST, GET, DELETE)
+        view_post_res = self.client.post(
+            '/api/v1/history/views',
+            headers=headers,
+            data=json.dumps({'destination_id': 1}),
+            content_type='application/json'
+        )
+        self.assertEqual(view_post_res.status_code, 201)
+
+        view_get_res = self.client.get('/api/v1/history/views', headers=headers)
+        self.assertEqual(view_get_res.status_code, 200)
+
+        view_del_res = self.client.delete('/api/v1/history/views', headers=headers)
+        self.assertEqual(view_del_res.status_code, 200)
+
 if __name__ == '__main__':
     unittest.main()
+

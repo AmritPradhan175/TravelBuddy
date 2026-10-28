@@ -1,5 +1,6 @@
 """Destination catalog and discovery routes."""
 from flask import Blueprint, request, jsonify
+from ..extensions import db
 from ..models.destination import Destination
 from ..services.recommender_service import recommender
 from ..utils.errors import APIError
@@ -68,7 +69,7 @@ def list_destinations():
 @destinations_bp.route('/<int:destination_id>', methods=['GET'])
 def get_destination(destination_id: int):
     """Retrieves full details for a single destination."""
-    dest = Destination.query.get(destination_id)
+    dest = db.session.get(Destination, destination_id)
     if not dest:
         raise APIError("Destination not found.", status_code=404)
 
@@ -82,7 +83,7 @@ def get_destination(destination_id: int):
 @destinations_bp.route('/<int:destination_id>/similar', methods=['GET'])
 def get_similar(destination_id: int):
     """Calculates similar destinations using the TF-IDF machine learning model."""
-    dest = Destination.query.get(destination_id)
+    dest = db.session.get(Destination, destination_id)
     if not dest:
         raise APIError("Destination not found.", status_code=404)
 

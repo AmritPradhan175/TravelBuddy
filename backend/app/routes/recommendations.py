@@ -1,5 +1,6 @@
 """Recommendation endpoints powered by TF-IDF & Cosine Similarity."""
 from flask import Blueprint, request, jsonify, g
+from ..extensions import db
 from ..models.user import User
 from ..models.favorite import Favorite
 from ..services.recommender_service import recommender
@@ -48,7 +49,7 @@ def get_personalized():
     exclude_ids = []
 
     if g.current_user_id:
-        user = User.query.get(g.current_user_id)
+        user = db.session.get(User, g.current_user_id)
         if user and user.preferences:
             travel_styles = user.preferences.travel_styles or travel_styles
             preferred_regions = user.preferences.preferred_regions or preferred_regions

@@ -88,7 +88,7 @@ def login():
 @auth_required
 def get_me():
     """Returns the authenticated user's profile."""
-    user = User.query.get(g.current_user_id)
+    user = db.session.get(User, g.current_user_id)
     if not user:
         raise APIError("User not found.", status_code=404)
 

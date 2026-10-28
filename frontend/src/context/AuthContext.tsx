@@ -7,6 +7,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password?: string) => Promise<void>;
+  loginDemo: () => Promise<void>;
   register: (fullName: string, email: string, password: string, homeCity?: string) => Promise<void>;
   logout: () => void;
   favorites: number[]; // destination IDs
@@ -21,7 +22,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const DEMO_USER: User = {
+export const DEMO_USER: User = {
   id: 'usr_demo_01',
   email: 'explorer@travelbuddy.ai',
   full_name: 'Amrit Pradhan',
@@ -93,6 +94,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           localStorage.setItem('tb_search_history', JSON.stringify(queries));
         }
       }
+
+      // 4. Fetch recently viewed destinations
+      try {
+        const viewsRes = await apiClient.get<{ views: Array<{ destination_id: number }> }>('/history/views');
+        if (viewsRes && Array.isArray(viewsRes.views) && viewsRes.views.length > 0) {
+          const viewIds = viewsRes.views.map(v => v.destination_id);
+          setViewedDestinations(viewIds);
+          localStorage.setItem('tb_viewed_destinations', JSON.stringify(viewIds));
+        }
+      } catch {
+        // ignore
+      }
     } catch (err) {
       console.warn('API sync fallback to cached session:', err);
     } finally {
@@ -135,36 +148,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (res && res.token && res.user) {
         localStorage.setItem('tb_token', res.token);
         setUser(res.user);
-        
-        // Fetch server favorites
-        try {
-          const favRes = await apiClient.get<{ favorites: Array<{ destination_id: number }> }>('/favorites');
-          if (favRes && Array.isArray(favRes.favorites) && favRes.favorites.length > 0) {
-            setFavorites(favRes.favorites.map(f => f.destination_id));
-          }
-        } catch {
-          // ignore
-        }
+        await syncWithBackend();
       } else {
         throw new Error('Invalid response from server.');
       }
     } catch (err: any) {
-      // Fallback for offline demo mode
-      console.warn('Backend login error, falling back to local session:', err.message);
-      const fallbackUser: User = {
-        id: `usr_${Date.now()}`,
-        email,
-        full_name: email.split('@')[0],
-        created_at: new Date().toISOString(),
-        preferences: {
-          travel_styles: ['Nature', 'Cultural'],
-          preferred_regions: ['North India'],
-          default_budget_tier: 'mid_range',
-          currency: 'INR',
-        },
-      };
-      setUser(fallbackUser);
+      console.warn('Backend login error:', err.message);
+      // If it is a network failure (server unreachable) and logging in with demo account, fall back to offline demo user
+      if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) && email === 'explorer@travelbuddy.ai') {
+        localStorage.setItem('tb_token', 'demo_token_explorer');
+        localStorage.setItem('tb_user', JSON.stringify(DEMO_USER));
+        setUser(DEMO_USER);
+        return;
+      }
       throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loginDemo = async () => {
+    setIsLoading(true);
+    try {
+      await login('explorer@travelbuddy.ai', 'password123');
+    } catch (err) {
+      console.info('Backend login failed, using local demo profile:', err);
+      localStorage.setItem('tb_token', 'demo_token_explorer');
+      localStorage.setItem('tb_user', JSON.stringify(DEMO_USER));
+      setUser(DEMO_USER);
     } finally {
       setIsLoading(false);
     }
@@ -186,6 +197,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         throw new Error('Failed to create account.');
       }
+    } catch (err: any) {
+      console.warn('Registration error:', err.message);
+      // If network is completely offline/unreachable, create local offline profile for demo
+      if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('NetworkError'))) {
+        const localUser: User = {
+          id: `usr_${Date.now()}`,
+          email,
+          full_name: fullName,
+          home_city: homeCity,
+          avatar_url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+          preferences: {
+            travel_styles: ['Nature', 'Cultural'],
+            preferred_regions: ['North India', 'South India'],
+            default_budget_tier: 'mid_range',
+            currency: 'INR',
+          },
+          created_at: new Date().toISOString(),
+        };
+        localStorage.setItem('tb_token', `demo_token_${Date.now()}`);
+        localStorage.setItem('tb_user', JSON.stringify(localUser));
+        setUser(localUser);
+        return;
+      }
+      throw err;
     } finally {
       setIsLoading(false);
     }
@@ -266,6 +301,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!user,
         isLoading,
         login,
+        loginDemo,
         register,
         logout,
         favorites,

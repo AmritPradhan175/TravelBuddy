@@ -30,7 +30,7 @@ def add_favorite():
     if not destination_id:
         raise APIError("destination_id is required.", status_code=400)
 
-    dest = Destination.query.get(destination_id)
+    dest = db.session.get(Destination, destination_id)
     if not dest:
         raise APIError("Destination not found.", status_code=404)
 

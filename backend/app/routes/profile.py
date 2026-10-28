@@ -11,7 +11,7 @@ profile_bp = Blueprint('profile', __name__, url_prefix='/api/v1/profile')
 @auth_required
 def get_profile():
     """Returns the authenticated user's profile and preferences."""
-    user = User.query.get(g.current_user_id)
+    user = db.session.get(User, g.current_user_id)
     if not user:
         raise APIError("User not found.", status_code=404)
 
@@ -26,7 +26,7 @@ def get_profile():
 @auth_required
 def update_profile():
     """Updates the user's name, home city, or avatar."""
-    user = User.query.get(g.current_user_id)
+    user = db.session.get(User, g.current_user_id)
     if not user:
         raise APIError("User not found.", status_code=404)
 
@@ -51,7 +51,7 @@ def update_profile():
 @auth_required
 def get_preferences():
     """Returns travel styles, budget tier, and preferred regions."""
-    user = User.query.get(g.current_user_id)
+    user = db.session.get(User, g.current_user_id)
     if not user:
         raise APIError("User not found.", status_code=404)
 
@@ -66,7 +66,7 @@ def get_preferences():
 @auth_required
 def update_preferences():
     """Updates travel style preferences used by the recommendation engine."""
-    user = User.query.get(g.current_user_id)
+    user = db.session.get(User, g.current_user_id)
     if not user:
         raise APIError("User not found.", status_code=404)
 
